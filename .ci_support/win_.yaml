@@ -7,6 +7,6 @@ channel_targets:
 cxx_compiler:
 - vs2017
 suitesparse:
-- '5.6'
+- '5.1'
 vc:
 - '14'
