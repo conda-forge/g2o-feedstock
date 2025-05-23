@@ -1,13 +1,13 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-mkdir build
-cd build
+set -o xtrace -o nounset -o pipefail -o errexit
 
-cmake .. \
-      -G "Ninja" \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DCMAKE_PREFIX_PATH=$PREFIX -DCMAKE_INSTALL_PREFIX=$PREFIX \
-      -DCMAKE_INSTALL_LIBDIR=lib \
-      -DCMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP=True
+cmake -S . -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -Wno-dev \
+    -DBUILD_TESTING=OFF \
+    ${CMAKE_ARGS}
 
-cmake --build . --config Release --target install
+cmake --build build --config Release -j${CPU_COUNT}
+cmake --install build --config Release
