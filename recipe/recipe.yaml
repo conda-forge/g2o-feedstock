@@ -22,7 +22,7 @@ requirements:
     - pkg-config
   host:
     - eigen
-    - suitesparse
+    - suitesparse 6.*
   run_exports:
     - ${{ pin_subpackage('g2o', upper_bound='x.x.x') }}
 
