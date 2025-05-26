@@ -203,4 +203,5 @@ Feedstock Maintainers
 
 * [@danielnachun](https://github.com/danielnachun/)
 * [@seanyen](https://github.com/seanyen/)
+* [@wolfv](https://github.com/wolfv/)
 
