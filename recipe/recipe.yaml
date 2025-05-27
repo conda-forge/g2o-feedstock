@@ -23,6 +23,9 @@ requirements:
   host:
     - eigen
     - suitesparse 5.*
+    # to make find_package(BLAS) work on Windows, we need to depend on blas-devel
+    - blas-devel
+
   run_exports:
     - ${{ pin_subpackage('g2o', upper_bound='x.x.x') }}
 
