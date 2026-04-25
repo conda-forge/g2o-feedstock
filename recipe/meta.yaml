@@ -1,16 +1,16 @@
 {% set name = "g2o" %}
-{% set version = "2019.11.23" %}
+{% set version = "20241228_git" %}
 
 package:
   name: {{ name }}
   version: {{ version }}
 
 source:
-  - url: https://github.com/RainerKuemmerle/g2o/archive/fcba4eaca6f20d9a5792404cc8ef303aeb8ba5d2.tar.gz
-    sha256: 8424d593e12c3032ead50c782fd2a55c62be5110143bf55378b763d374ac0ebd
+  - url: https://github.com/RainerKuemmerle/g2o/archive/fcba4eaca6f20d9a5792404cc8ef303aeb8ba5d2.zip
+    sha256: 8babb832062219dbc8897a8092e7aa12eb1101498d5484d688f24221479b0629
 
 build:
-  number: 1
+  number: 0
   skip: true  # [osx or win and vc<14]
   run_exports:
     - {{ pin_subpackage(name, max_pin='x.x.x') }}
@@ -19,6 +19,7 @@ requirements:
   build:
     - {{ compiler('cxx') }}
     - {{ compiler('c') }}
+    - {{ stdlib("c") }}
     - ninja
     - cmake
     - pkg-config
