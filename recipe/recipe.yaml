@@ -1,0 +1,49 @@
+context:
+  version: 20241228
+
+package:
+  name: g2o
+  version: ${{ version }}
+
+source:
+  - url: https://github.com/RainerKuemmerle/g2o/archive/${{ version }}_git.tar.gz
+    sha256: d691ead69184ebbb8256c9cd9f4121d1a880b169370efc0554dd31a64802a452
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ compiler('c') }}
+    - ${{ stdlib('c') }}
+    - ninja
+    - cmake
+    - pkg-config
+  host:
+    - eigen
+    - suitesparse 5.*
+    # to make find_package(BLAS) work on Windows, we need to depend on blas-devel
+    - blas-devel
+
+  run_exports:
+    - ${{ pin_subpackage('g2o', upper_bound='x.x.x') }}
+
+tests:
+  - script:
+      - g2o --help
+
+about:
+  license: LGPL-3.0-or-later
+  license_file: doc/license-lgpl.txt
+  summary: |
+    g2o - General Graph Optimization
+  homepage: https://github.com/RainerKuemmerle/g2o
+  repository: https://github.com/RainerKuemmerle/g2o
+  documentation: https://openslam-org.github.io/g2o.html
+
+extra:
+  recipe-maintainers:
+    - danielnachun
+    - seanyen
+    - wolfv
