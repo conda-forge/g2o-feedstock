@@ -1,0 +1,103 @@
+context:
+  name: g2o
+  version: "2024.12.28"
+  tag: 20241228_git
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/RainerKuemmerle/g2o/archive/refs/tags/${{ tag }}.tar.gz
+  sha256: d691ead69184ebbb8256c9cd9f4121d1a880b169370efc0554dd31a64802a452
+  patches:
+    - patches/0001-use-eigen-config.patch
+
+build:
+  number: 0
+  script:
+    - if: win
+      then: |
+        cmake -G Ninja ^
+          %CMAKE_ARGS% ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DCMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX% ^
+          -DBUILD_SHARED_LIBS=ON ^
+          -DBUILD_UNITTESTS=OFF ^
+          -DBUILD_WITH_MARCH_NATIVE=OFF ^
+          -DDO_SSE_AUTODETECT=OFF ^
+          -DG2O_BUILD_APPS=OFF ^
+          -DG2O_BUILD_BENCHMARKS=OFF ^
+          -DG2O_BUILD_EXAMPLES=OFF ^
+          -DG2O_USE_LOGGING=OFF ^
+          -DG2O_USE_OPENGL=OFF ^
+          -S %SRC_DIR% -B build
+        cmake --build build --config Release --target install
+      else: |
+        cmake -G Ninja \
+          ${CMAKE_ARGS} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+          -DCMAKE_INSTALL_LIBDIR=lib \
+          -DBUILD_SHARED_LIBS=ON \
+          -DBUILD_UNITTESTS=OFF \
+          -DBUILD_WITH_MARCH_NATIVE=OFF \
+          -DDO_SSE_AUTODETECT=OFF \
+          -DG2O_BUILD_APPS=OFF \
+          -DG2O_BUILD_BENCHMARKS=OFF \
+          -DG2O_BUILD_EXAMPLES=OFF \
+          -DG2O_USE_LOGGING=OFF \
+          -DG2O_USE_OPENGL=OFF \
+          -S ${SRC_DIR} -B build
+        cmake --build build --config Release --target install
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ compiler('cxx') }}
+    - ${{ stdlib('c') }}
+    - cmake
+    - ninja
+  host:
+    - eigen
+    - libblas
+    - suitesparse
+  run:
+    - eigen
+  run_exports:
+    - ${{ pin_subpackage(name, upper_bound='x.x.x') }}
+
+tests:
+  - package_contents:
+      include:
+        - g2o/core/sparse_optimizer.h
+      lib:
+        - g2o_core
+        - g2o_solver_cholmod
+        - g2o_solver_csparse
+  - script:
+      - if: unix
+        then:
+          - test -f ${PREFIX}/lib/cmake/g2o/g2oConfig.cmake
+      - if: win
+        then:
+          - if not exist %LIBRARY_PREFIX%\\lib\\cmake\\g2o\\g2oConfig.cmake exit 1
+
+about:
+  homepage: https://github.com/RainerKuemmerle/g2o
+  license: BSD-3-Clause AND LGPL-3.0-or-later
+  license_file:
+    - doc/license-bsd.txt
+    - doc/license-lgpl.txt
+  summary: General framework for graph optimization
+  description: >-
+    g2o is an open-source C++ framework for optimizing graph-based nonlinear
+    error functions. This package contains the headless libraries without the
+    optional Qt applications and examples.
+  documentation: https://openslam-org.github.io/g2o.html
+  repository: https://github.com/RainerKuemmerle/g2o
+
+extra:
+  recipe-maintainers:
+    - seanyen
+    - wolfv
