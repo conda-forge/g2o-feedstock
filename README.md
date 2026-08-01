@@ -32,7 +32,7 @@ Development: https://github.com/RainerKuemmerle/g2o
 
 Documentation: https://openslam-org.github.io/g2o.html
 
-Shared libraries, headers, and CMake metadata for g2o. The libraries do not depend on Qt or OpenGL.
+Shared libraries, headers, and CMake metadata for g2o. The core package does not depend on Qt.
 
 Current build status
 ====================
