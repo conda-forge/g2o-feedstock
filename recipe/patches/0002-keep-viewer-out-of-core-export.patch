@@ -1,0 +1,24 @@
+diff --git a/cmake_modules/FindQGLViewer.cmake b/cmake_modules/FindQGLViewer.cmake
+index 25b65f8..9ee094f 100644
+--- a/cmake_modules/FindQGLViewer.cmake
++++ b/cmake_modules/FindQGLViewer.cmake
+@@ -14,6 +14,7 @@ find_path(QGLVIEWER_INCLUDE_DIR qglviewer.h
+     /usr/local/include/QGLViewer
+     /sw/include/QGLViewer
+     ENV QGLVIEWERROOT
++    PATH_SUFFIXES QGLViewer
+   )
+ 
+ find_library(QGLVIEWER_LIBRARY_RELEASE
+diff --git a/g2o/apps/g2o_viewer/CMakeLists.txt b/g2o/apps/g2o_viewer/CMakeLists.txt
+index bfd1b98..1ed1331 100644
+--- a/g2o/apps/g2o_viewer/CMakeLists.txt
++++ b/g2o/apps/g2o_viewer/CMakeLists.txt
+@@ -41,7 +41,6 @@ target_link_libraries(viewer_library core opengl_helper)
+ target_link_libraries(g2o_viewer viewer_library)
+ 
+ install(TARGETS viewer_library
+-  EXPORT ${G2O_TARGETS_EXPORT_NAME}
+   RUNTIME DESTINATION ${RUNTIME_DESTINATION}
+   LIBRARY DESTINATION ${LIBRARY_DESTINATION}
+   ARCHIVE DESTINATION ${ARCHIVE_DESTINATION}

@@ -13,48 +13,52 @@ source:
   sha256: d691ead69184ebbb8256c9cd9f4121d1a880b169370efc0554dd31a64802a452
   patches:
     - patches/0001-use-eigen-config.patch
+    - patches/0002-keep-viewer-out-of-core-export.patch
 
 outputs:
   - staging:
       name: g2o-build
     build:
       script:
-        - if: win
-          then: |
-            cmake -G Ninja ^
-              %CMAKE_ARGS% ^
-              -DCMAKE_BUILD_TYPE=Release ^
-              -DCMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX% ^
-              -DBUILD_SHARED_LIBS=ON ^
-              -DBUILD_UNITTESTS=OFF ^
-              -DBUILD_WITH_MARCH_NATIVE=OFF ^
-              -DDO_SSE_AUTODETECT=OFF ^
-              -DG2O_BUILD_APPS=ON ^
-              -DG2O_BUILD_BENCHMARKS=OFF ^
-              -DG2O_BUILD_EXAMPLES=OFF ^
-              -DG2O_BUILD_LINKED_APPS=OFF ^
-              -DG2O_USE_LOGGING=OFF ^
-              -DG2O_USE_OPENGL=OFF ^
-              -S %SRC_DIR% -B build
-            cmake --build build --config Release --target install
-          else: |
-            cmake -G Ninja \
-              ${CMAKE_ARGS} \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_INSTALL_PREFIX=${PREFIX} \
-              -DCMAKE_INSTALL_LIBDIR=lib \
-              -DBUILD_SHARED_LIBS=ON \
-              -DBUILD_UNITTESTS=OFF \
-              -DBUILD_WITH_MARCH_NATIVE=OFF \
-              -DDO_SSE_AUTODETECT=OFF \
-              -DG2O_BUILD_APPS=ON \
-              -DG2O_BUILD_BENCHMARKS=OFF \
-              -DG2O_BUILD_EXAMPLES=OFF \
-              -DG2O_BUILD_LINKED_APPS=OFF \
-              -DG2O_USE_LOGGING=OFF \
-              -DG2O_USE_OPENGL=OFF \
-              -S ${SRC_DIR} -B build
-            cmake --build build --config Release --target install
+        env:
+          G2O_OPENGL: ${{ "OFF" if linux and aarch64 else "ON" }}
+        content:
+          - if: win
+            then: |
+              cmake -G Ninja ^
+                %CMAKE_ARGS% ^
+                -DCMAKE_BUILD_TYPE=Release ^
+                -DCMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX% ^
+                -DBUILD_SHARED_LIBS=ON ^
+                -DBUILD_UNITTESTS=OFF ^
+                -DBUILD_WITH_MARCH_NATIVE=OFF ^
+                -DDO_SSE_AUTODETECT=OFF ^
+                -DG2O_BUILD_APPS=ON ^
+                -DG2O_BUILD_BENCHMARKS=OFF ^
+                -DG2O_BUILD_EXAMPLES=OFF ^
+                -DG2O_BUILD_LINKED_APPS=OFF ^
+                -DG2O_USE_LOGGING=OFF ^
+                -DG2O_USE_OPENGL=%G2O_OPENGL% ^
+                -S %SRC_DIR% -B build
+              cmake --build build --config Release --target install
+            else: |
+              cmake -G Ninja \
+                ${CMAKE_ARGS} \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+                -DCMAKE_INSTALL_LIBDIR=lib \
+                -DBUILD_SHARED_LIBS=ON \
+                -DBUILD_UNITTESTS=OFF \
+                -DBUILD_WITH_MARCH_NATIVE=OFF \
+                -DDO_SSE_AUTODETECT=OFF \
+                -DG2O_BUILD_APPS=ON \
+                -DG2O_BUILD_BENCHMARKS=OFF \
+                -DG2O_BUILD_EXAMPLES=OFF \
+                -DG2O_BUILD_LINKED_APPS=OFF \
+                -DG2O_USE_LOGGING=OFF \
+                -DG2O_USE_OPENGL=${G2O_OPENGL} \
+                -S ${SRC_DIR} -B build
+              cmake --build build --config Release --target install
     requirements:
       build:
         - ${{ compiler('c') }}
@@ -66,6 +70,18 @@ outputs:
         - eigen
         - libblas
         - suitesparse
+        - if: not (linux and aarch64)
+          then:
+            - libqglviewer
+            - qt-main
+        - if: linux and not aarch64
+          then:
+            - libgl-devel
+            - libglu
+      ignore_run_exports:
+        from_package:
+          - libqglviewer
+          - qt-main
 
   - package:
       name: libg2o
@@ -79,6 +95,12 @@ outputs:
           - Library/include/**
           - Library/lib/**
           - Library/bin/*.dll
+        exclude:
+          - include/g2o/apps/g2o_viewer/**
+          - lib/*g2o_viewer*
+          - Library/include/g2o/apps/g2o_viewer/**
+          - Library/lib/*g2o_viewer*
+          - Library/bin/*g2o_viewer*.dll
     requirements:
       run:
         - eigen
@@ -104,8 +126,8 @@ outputs:
     about:
       summary: Headless libraries for the g2o graph optimization framework
       description: >-
-        Shared libraries, headers, and CMake metadata for g2o. The libraries do
-        not depend on Qt or OpenGL.
+        Shared libraries, headers, and CMake metadata for g2o. The core package
+        does not depend on Qt.
 
   - package:
       name: g2o
@@ -117,16 +139,27 @@ outputs:
       files:
         include:
           - bin/g2o*
+          - include/g2o/apps/g2o_viewer/**
+          - lib/*g2o_viewer*
           - Library/bin/g2o*.exe
+          - Library/bin/*g2o_viewer*.dll
+          - Library/include/g2o/apps/g2o_viewer/**
+          - Library/lib/*g2o_viewer*
     requirements:
       run:
         - ${{ pin_subpackage('libg2o', exact=True) }}
+        - if: not (linux and aarch64)
+          then:
+            - libqglviewer
+            - qt-main
     tests:
       - package_contents:
           bin:
             - g2o
             - g2o_simulator2d
             - g2o_simulator3d
+            - if: not (linux and aarch64)
+              then: g2o_viewer
       - script:
           - g2o --help
     about:
