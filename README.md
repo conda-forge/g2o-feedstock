@@ -3,17 +3,36 @@ About g2o-feedstock
 
 Feedstock license: [BSD-3-Clause](https://github.com/conda-forge/g2o-feedstock/blob/main/LICENSE.txt)
 
+
+About g2o
+---------
+
 Home: https://github.com/RainerKuemmerle/g2o
 
 Package license: BSD-3-Clause AND LGPL-3.0-or-later
 
-Summary: General framework for graph optimization
+Summary: Command-line applications for the g2o graph optimization framework
 
 Development: https://github.com/RainerKuemmerle/g2o
 
 Documentation: https://openslam-org.github.io/g2o.html
 
-g2o is an open-source C++ framework for optimizing graph-based nonlinear error functions. This package contains the headless libraries without the optional Qt applications and examples.
+Command-line optimizer and graph simulation applications built from g2o.
+
+About libg2o
+------------
+
+Home: https://github.com/RainerKuemmerle/g2o
+
+Package license: BSD-3-Clause AND LGPL-3.0-or-later
+
+Summary: Headless libraries for the g2o graph optimization framework
+
+Development: https://github.com/RainerKuemmerle/g2o
+
+Documentation: https://openslam-org.github.io/g2o.html
+
+Shared libraries, headers, and CMake metadata for g2o. The libraries do not depend on Qt or OpenGL.
 
 Current build status
 ====================
@@ -67,6 +86,7 @@ Current release info
 | Name | Downloads | Version | Platforms |
 | --- | --- | --- | --- |
 | [![Conda Recipe](https://img.shields.io/badge/recipe-g2o-green.svg)](https://anaconda.org/conda-forge/g2o) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/g2o.svg)](https://anaconda.org/conda-forge/g2o) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/g2o.svg)](https://anaconda.org/conda-forge/g2o) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/g2o.svg)](https://anaconda.org/conda-forge/g2o) |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-libg2o-green.svg)](https://anaconda.org/conda-forge/libg2o) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/libg2o.svg)](https://anaconda.org/conda-forge/libg2o) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/libg2o.svg)](https://anaconda.org/conda-forge/libg2o) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/libg2o.svg)](https://anaconda.org/conda-forge/libg2o) |
 
 Installing g2o
 ==============
@@ -78,16 +98,16 @@ conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 
-Once the `conda-forge` channel has been enabled, `g2o` can be installed with `conda`:
+Once the `conda-forge` channel has been enabled, `g2o, libg2o` can be installed with `conda`:
 
 ```
-conda install g2o
+conda install g2o libg2o
 ```
 
 or with `mamba`:
 
 ```
-mamba install g2o
+mamba install g2o libg2o
 ```
 
 It is possible to list all of the versions of `g2o` available on your platform with `conda`:
