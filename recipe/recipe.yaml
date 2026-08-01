@@ -15,6 +15,9 @@ source:
     - patches/0001-use-eigen-config.patch
     - patches/0002-keep-viewer-out-of-core-export.patch
 
+build:
+  number: 0
+
 outputs:
   - staging:
       name: g2o-build
