@@ -1,10 +1,11 @@
+schema_version: 1
+
 context:
-  name: g2o
   version: "2024.12.28"
   tag: 20241228_git
 
-package:
-  name: ${{ name }}
+recipe:
+  name: g2o-split
   version: ${{ version }}
 
 source:
@@ -13,75 +14,125 @@ source:
   patches:
     - patches/0001-use-eigen-config.patch
 
-build:
-  number: 0
-  script:
-    - if: win
-      then: |
-        cmake -G Ninja ^
-          %CMAKE_ARGS% ^
-          -DCMAKE_BUILD_TYPE=Release ^
-          -DCMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX% ^
-          -DBUILD_SHARED_LIBS=ON ^
-          -DBUILD_UNITTESTS=OFF ^
-          -DBUILD_WITH_MARCH_NATIVE=OFF ^
-          -DDO_SSE_AUTODETECT=OFF ^
-          -DG2O_BUILD_APPS=OFF ^
-          -DG2O_BUILD_BENCHMARKS=OFF ^
-          -DG2O_BUILD_EXAMPLES=OFF ^
-          -DG2O_USE_LOGGING=OFF ^
-          -DG2O_USE_OPENGL=OFF ^
-          -S %SRC_DIR% -B build
-        cmake --build build --config Release --target install
-      else: |
-        cmake -G Ninja \
-          ${CMAKE_ARGS} \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=${PREFIX} \
-          -DCMAKE_INSTALL_LIBDIR=lib \
-          -DBUILD_SHARED_LIBS=ON \
-          -DBUILD_UNITTESTS=OFF \
-          -DBUILD_WITH_MARCH_NATIVE=OFF \
-          -DDO_SSE_AUTODETECT=OFF \
-          -DG2O_BUILD_APPS=OFF \
-          -DG2O_BUILD_BENCHMARKS=OFF \
-          -DG2O_BUILD_EXAMPLES=OFF \
-          -DG2O_USE_LOGGING=OFF \
-          -DG2O_USE_OPENGL=OFF \
-          -S ${SRC_DIR} -B build
-        cmake --build build --config Release --target install
+outputs:
+  - staging:
+      name: g2o-build
+    build:
+      script:
+        - if: win
+          then: |
+            cmake -G Ninja ^
+              %CMAKE_ARGS% ^
+              -DCMAKE_BUILD_TYPE=Release ^
+              -DCMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX% ^
+              -DBUILD_SHARED_LIBS=ON ^
+              -DBUILD_UNITTESTS=OFF ^
+              -DBUILD_WITH_MARCH_NATIVE=OFF ^
+              -DDO_SSE_AUTODETECT=OFF ^
+              -DG2O_BUILD_APPS=ON ^
+              -DG2O_BUILD_BENCHMARKS=OFF ^
+              -DG2O_BUILD_EXAMPLES=OFF ^
+              -DG2O_BUILD_LINKED_APPS=OFF ^
+              -DG2O_USE_LOGGING=OFF ^
+              -DG2O_USE_OPENGL=OFF ^
+              -S %SRC_DIR% -B build
+            cmake --build build --config Release --target install
+          else: |
+            cmake -G Ninja \
+              ${CMAKE_ARGS} \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_INSTALL_PREFIX=${PREFIX} \
+              -DCMAKE_INSTALL_LIBDIR=lib \
+              -DBUILD_SHARED_LIBS=ON \
+              -DBUILD_UNITTESTS=OFF \
+              -DBUILD_WITH_MARCH_NATIVE=OFF \
+              -DDO_SSE_AUTODETECT=OFF \
+              -DG2O_BUILD_APPS=ON \
+              -DG2O_BUILD_BENCHMARKS=OFF \
+              -DG2O_BUILD_EXAMPLES=OFF \
+              -DG2O_BUILD_LINKED_APPS=OFF \
+              -DG2O_USE_LOGGING=OFF \
+              -DG2O_USE_OPENGL=OFF \
+              -S ${SRC_DIR} -B build
+            cmake --build build --config Release --target install
+    requirements:
+      build:
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - ${{ stdlib('c') }}
+        - cmake
+        - ninja
+      host:
+        - eigen
+        - libblas
+        - suitesparse
 
-requirements:
-  build:
-    - ${{ compiler('c') }}
-    - ${{ compiler('cxx') }}
-    - ${{ stdlib('c') }}
-    - cmake
-    - ninja
-  host:
-    - eigen
-    - libblas
-    - suitesparse
-  run:
-    - eigen
-  run_exports:
-    - ${{ pin_subpackage(name, upper_bound='x.x.x') }}
+  - package:
+      name: libg2o
+    inherit: g2o-build
+    build:
+      number: 0
+      files:
+        include:
+          - include/**
+          - lib/**
+          - Library/include/**
+          - Library/lib/**
+          - Library/bin/*.dll
+    requirements:
+      run:
+        - eigen
+      run_exports:
+        - ${{ pin_subpackage('libg2o', upper_bound='x.x.x') }}
+    tests:
+      - package_contents:
+          include:
+            - g2o/core/sparse_optimizer.h
+            - g2o/apps/g2o_cli/g2o_common.h
+          lib:
+            - g2o_core
+            - g2o_cli
+            - g2o_solver_cholmod
+            - g2o_solver_csparse
+      - script:
+          - if: unix
+            then:
+              - test -f ${PREFIX}/lib/cmake/g2o/g2oConfig.cmake
+          - if: win
+            then:
+              - if not exist %LIBRARY_PREFIX%\lib\cmake\g2o\g2oConfig.cmake exit 1
+    about:
+      summary: Headless libraries for the g2o graph optimization framework
+      description: >-
+        Shared libraries, headers, and CMake metadata for g2o. The libraries do
+        not depend on Qt or OpenGL.
 
-tests:
-  - package_contents:
-      include:
-        - g2o/core/sparse_optimizer.h
-      lib:
-        - g2o_core
-        - g2o_solver_cholmod
-        - g2o_solver_csparse
-  - script:
-      - if: unix
-        then:
-          - test -f ${PREFIX}/lib/cmake/g2o/g2oConfig.cmake
-      - if: win
-        then:
-          - if not exist %LIBRARY_PREFIX%\\lib\\cmake\\g2o\\g2oConfig.cmake exit 1
+  - package:
+      name: g2o
+    inherit:
+      from: g2o-build
+      run_exports: false
+    build:
+      number: 0
+      files:
+        include:
+          - bin/g2o*
+          - Library/bin/g2o*.exe
+    requirements:
+      run:
+        - ${{ pin_subpackage('libg2o', exact=True) }}
+    tests:
+      - package_contents:
+          bin:
+            - g2o
+            - g2o_simulator2d
+            - g2o_simulator3d
+      - script:
+          - g2o --help
+    about:
+      summary: Command-line applications for the g2o graph optimization framework
+      description: >-
+        Command-line optimizer and graph simulation applications built from g2o.
 
 about:
   homepage: https://github.com/RainerKuemmerle/g2o
@@ -92,8 +143,7 @@ about:
   summary: General framework for graph optimization
   description: >-
     g2o is an open-source C++ framework for optimizing graph-based nonlinear
-    error functions. This package contains the headless libraries without the
-    optional Qt applications and examples.
+    error functions.
   documentation: https://openslam-org.github.io/g2o.html
   repository: https://github.com/RainerKuemmerle/g2o
 
