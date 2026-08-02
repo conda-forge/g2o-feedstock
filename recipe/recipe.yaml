@@ -33,6 +33,7 @@ outputs:
                 -DCMAKE_BUILD_TYPE=Release ^
                 -DCMAKE_INSTALL_PREFIX=%LIBRARY_PREFIX% ^
                 -DBUILD_SHARED_LIBS=ON ^
+                -DBUILD_LGPL_SHARED_LIBS=ON ^
                 -DBUILD_UNITTESTS=OFF ^
                 -DBUILD_WITH_MARCH_NATIVE=OFF ^
                 -DDO_SSE_AUTODETECT=OFF ^
@@ -51,6 +52,7 @@ outputs:
                 -DCMAKE_INSTALL_PREFIX=${PREFIX} \
                 -DCMAKE_INSTALL_LIBDIR=lib \
                 -DBUILD_SHARED_LIBS=ON \
+                -DBUILD_LGPL_SHARED_LIBS=ON \
                 -DBUILD_UNITTESTS=OFF \
                 -DBUILD_WITH_MARCH_NATIVE=OFF \
                 -DDO_SSE_AUTODETECT=OFF \
@@ -163,8 +165,10 @@ outputs:
             - g2o_simulator3d
             - if: not (linux and aarch64)
               then: g2o_viewer
-      - script:
-          - g2o --help
+      - if: build_platform == target_platform
+        then:
+          - script:
+              - g2o --help
     about:
       summary: Command-line applications for the g2o graph optimization framework
       description: >-
